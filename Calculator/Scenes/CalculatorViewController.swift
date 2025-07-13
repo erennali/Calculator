@@ -27,6 +27,12 @@ final class CalculatorViewController: UIViewController {
 
 private extension CalculatorViewController {
     func setupUI() {
+        for tag in 0...18 {
+                if let button = view.viewWithTag(tag) as? UIButton {
+                    button.layer.cornerRadius = 22
+                    button.clipsToBounds = true
+                }
+            }
         resultLabel.adjustsFontSizeToFitWidth = true
         resultLabel.minimumScaleFactor = 0.3
         resultLabel.isUserInteractionEnabled = true
@@ -45,6 +51,7 @@ private extension CalculatorViewController {
         resultLabel.text = display.result
         calculationDetailLabel.text = display.detail
     }
+  
 }
 
 private extension UISwipeGestureRecognizer {
