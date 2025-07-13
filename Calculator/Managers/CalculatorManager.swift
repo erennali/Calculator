@@ -14,6 +14,7 @@ final class CalculatorManager {
     private var operation: Input?
     private var typing = false
     private var reset = false
+    private var expression = ""
     
     private var value: Decimal { Decimal(string: display) ?? .zero }
     
@@ -22,7 +23,10 @@ final class CalculatorManager {
         $0.usesGroupingSeparator = false
     }
     
-    var state: Display { Display(result: display, detail: detail) }
+    var state: Display {
+        let showExpression = !expression.isEmpty ? expression : display
+        return Display(result: showExpression, detail: detail)
+    }
     
     func input(_ tag: Int) -> Display {
         guard let input = Input(rawValue: tag) else { return state }
@@ -53,6 +57,7 @@ private extension CalculatorManager {
         guard display.count < 15 else { return }
         if reset { clear() }
         display = typing ? display + digit.symbol : digit.symbol
+        expression = typing ? expression + digit.symbol : (operation != nil ? expression + digit.symbol : digit.symbol)
         typing = true
     }
     
@@ -60,6 +65,7 @@ private extension CalculatorManager {
         guard !display.contains("."), display.count < 14 else { return }
         if reset { display = "0"; reset = false }
         display += "."
+        expression += "."
         typing = true
     }
     
@@ -68,11 +74,10 @@ private extension CalculatorManager {
             guard let result = pending.apply(memory, value) else { error(); return }
             memory = result
             display = format(result)
-            detail += " \(format(value)) \(opr.symbol)"
         } else {
             memory = value
-            detail = reset ? "\(display) \(opr.symbol)" : "\(detail) \(display) \(opr.symbol)"
         }
+        expression += " \(opr.symbol) "
         operation = opr
         typing = false
         reset = false
@@ -80,18 +85,22 @@ private extension CalculatorManager {
     
     func calculate() {
         guard let opr = operation else { return }
+        let currentValue = display
         guard let result = opr.apply(memory, value) else { error(); return }
+        expression += " \(display) = \(format(result))"
         display = format(result)
-        detail += " \(format(value))"
+        detail = "\(format(memory)) \(opr.symbol) \(currentValue)"
         memory = result
         operation = nil
         typing = false
         reset = true
+        expression = ""
     }
     
     func clear() {
         display = "0"
         detail = ""
+        expression = ""
         memory = .zero
         operation = nil
         typing = false
