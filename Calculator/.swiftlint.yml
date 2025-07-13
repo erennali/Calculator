@@ -1,0 +1,41 @@
+disabled_rules:
+-  trailing_whitespace
+
+opt_in_rules:
+-  empty_count
+-  empty_string
+
+excluded:
+-  Carthage
+-  Pods
+-  SwiftLint/Common/3rdPartyLib
+
+line_length:
+    uyarı:  150
+    hata:  200
+    ignores_function_declarations:  true
+    ignores_comments:  true
+    ignores_urls:  true
+    
+function_body_length:
+    uyarı:  300
+    hata:  500
+
+function_parameter_count:
+    uyarı:  6
+    hata:  8
+    
+type_body_length:
+    uyarı:  300
+    hata:  500
+    
+file_length:
+    uyarı:  1000
+    hata:  1500
+    ignore_comment_only_lines:  true
+    
+cyclomatic_complexity:
+    uyarı:  15
+    hata:  25
+
+reporter:  "xcode"
