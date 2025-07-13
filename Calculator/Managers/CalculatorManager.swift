@@ -8,5 +8,110 @@
 import Foundation
 
 final class CalculatorManager {
+    private var display = "0"
+    private var detail = ""
+    private var memory = Decimal.zero
+    private var operation: Input?
+    private var typing = false
+    private var reset = false
     
+    private var value: Decimal { Decimal(string: display) ?? .zero }
+    
+    private let formatter = NumberFormatter().then {
+        $0.maximumFractionDigits = 8
+        $0.usesGroupingSeparator = false
+    }
+    
+    var state: Display { Display(result: display, detail: detail) }
+    
+    func input(_ tag: Int) -> Display {
+        guard let input = Input(rawValue: tag) else { return state }
+        
+        switch input {
+        case let digit where digit.isDigit: handleDigit(digit)
+        case .dot: handleDot()
+        case .clear: clear()
+        case .sign: display = format(-value)
+        case .percent: display = format(value / 100)
+        case .equals: calculate()
+        case let opr where opr.isOperator: handleOperator(opr)
+        default: break
+        }
+        
+        return state
+    }
+    
+    func backspace() -> Display {
+        guard display != "0", !reset, typing else { return state }
+        display = display.count > 1 ? String(display.dropLast()) : "0"
+        return state
+    }
+}
+
+private extension CalculatorManager {
+    func handleDigit(_ digit: Input) {
+        guard display.count < 15 else { return }
+        if reset { clear() }
+        display = typing ? display + digit.symbol : digit.symbol
+        typing = true
+    }
+    
+    func handleDot() {
+        guard !display.contains("."), display.count < 14 else { return }
+        if reset { display = "0"; reset = false }
+        display += "."
+        typing = true
+    }
+    
+    func handleOperator(_ op: Input) {
+        if let pending = operation, typing {
+            guard let result = pending.apply(memory, value) else { error(); return }
+            memory = result
+            display = format(result)
+            detail += " \(format(value)) \(op.symbol)"
+        } else {
+            memory = value
+            detail = reset ? "\(display) \(op.symbol)" : "\(detail) \(display) \(op.symbol)"
+        }
+        operation = op
+        typing = false
+        reset = false
+    }
+    
+    func calculate() {
+        guard let op = operation else { return }
+        guard let result = op.apply(memory, value) else { error(); return }
+        display = format(result)
+        detail += " \(format(value))"
+        memory = result
+        operation = nil
+        typing = false
+        reset = true
+    }
+    
+    func clear() {
+        display = "0"
+        detail = ""
+        memory = .zero
+        operation = nil
+        typing = false
+        reset = false
+    }
+    
+    func error() {
+        clear()
+        display = "Error"
+        reset = true
+    }
+    
+    func format(_ value: Decimal) -> String {
+        formatter.string(from: NSDecimalNumber(decimal: value)) ?? "Error"
+    }
+}
+
+private extension NumberFormatter {
+    func then(_ block: (NumberFormatter) -> Void) -> NumberFormatter {
+        block(self)
+        return self
+    }
 }
