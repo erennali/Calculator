@@ -34,7 +34,7 @@ final class CalculatorManager {
         case .sign: display = format(-value)
         case .percent: display = format(value / 100)
         case .equals: calculate()
-        case let opr where opr.isOperator: handleOperator(opr)
+        case let operation where operation.isOperator: handleOperator(operation)
         default: break
         }
         
@@ -63,24 +63,24 @@ private extension CalculatorManager {
         typing = true
     }
     
-    func handleOperator(_ op: Input) {
+    func handleOperator(_ opr: Input) {
         if let pending = operation, typing {
             guard let result = pending.apply(memory, value) else { error(); return }
             memory = result
             display = format(result)
-            detail += " \(format(value)) \(op.symbol)"
+            detail += " \(format(value)) \(opr.symbol)"
         } else {
             memory = value
-            detail = reset ? "\(display) \(op.symbol)" : "\(detail) \(display) \(op.symbol)"
+            detail = reset ? "\(display) \(opr.symbol)" : "\(detail) \(display) \(opr.symbol)"
         }
-        operation = op
+        operation = opr
         typing = false
         reset = false
     }
     
     func calculate() {
-        guard let op = operation else { return }
-        guard let result = op.apply(memory, value) else { error(); return }
+        guard let opr = operation else { return }
+        guard let result = opr.apply(memory, value) else { error(); return }
         display = format(result)
         detail += " \(format(value))"
         memory = result
