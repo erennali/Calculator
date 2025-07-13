@@ -39,4 +39,10 @@ enum Input: Int, CaseIterable {
           }
       }
   }
+
+struct Display {
+    let result: String
+    let detail: String
+    static let zero = Display(result: "0", detail: "")
+}
     
