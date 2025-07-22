@@ -48,6 +48,9 @@ final class CalculatorManager {
     func backspace() -> Display {
         guard display != "0", !reset, typing else { return state }
         display = display.count > 1 ? String(display.dropLast()) : "0"
+        if !expression.isEmpty {
+            expression = expression.count > 1 ? String(expression.dropLast()) : ""
+        }
         return state
     }
 }

@@ -44,6 +44,7 @@ private extension CalculatorViewController {
     }
     
     @objc func swipe() {
+        print("swipe detected")
         update(calculator.backspace())
     }
     
