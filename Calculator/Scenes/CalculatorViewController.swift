@@ -29,7 +29,7 @@ private extension CalculatorViewController {
     func setupUI() {
         for tag in 0...18 {
                 if let button = view.viewWithTag(tag) as? UIButton {
-                    button.layer.cornerRadius = 22
+                    button.layer.cornerRadius = 32 // button.frame.height / 2
                     button.clipsToBounds = true
                 }
             }
@@ -44,7 +44,6 @@ private extension CalculatorViewController {
     }
     
     @objc func swipe() {
-        print("swipe detected")
         update(calculator.backspace())
     }
     
