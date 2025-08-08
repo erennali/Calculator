@@ -87,12 +87,10 @@ private extension CalculatorManager {
     }
     
     func calculate() {
-        guard let opr = operation else { return }
-        let currentValue = display
-        guard let result = opr.apply(memory, value) else { error(); return }
-        expression += " \(display) = \(format(result))"
+        let (prettyFormula, evalFormula) = buildFormulasWithCurrentDisplay()
+        guard let result = evaluateFormula(evalFormula) else { error(); return }
         display = format(result)
-        detail = "\(format(memory)) \(opr.symbol) \(currentValue)"
+        detail = "\(prettyFormula) = \(format(result))"
         memory = result
         operation = nil
         typing = false
@@ -118,6 +116,35 @@ private extension CalculatorManager {
     
     func format(_ value: Decimal) -> String {
         formatter.string(from: NSDecimalNumber(decimal: value)) ?? "Error"
+    }
+    
+    func buildFormulasWithCurrentDisplay() -> (pretty: String, eval: String) {
+        var pretty = expression.trimmingCharacters(in: .whitespaces)
+        if pretty.isEmpty { pretty = display } else {
+            if let last = pretty.last, ["+", "-", "×", "÷"].contains(String(last)) {
+                pretty += display
+            } else {
+                if let range = pretty.range(of: #"-?[0-9]*\.?[0-9]+$"#, options: .regularExpression) {
+                    pretty.replaceSubrange(range, with: display)
+                } else {
+                    pretty += display
+                }
+            }
+        }
+        let eval = pretty
+            .replacingOccurrences(of: "×", with: "*")
+            .replacingOccurrences(of: "÷", with: "/")
+        return (pretty, eval)
+    }
+    
+    func evaluateFormula(_ formula: String) -> Decimal? {
+        let expression = NSExpression(format: formula)
+        guard let anyValue = expression.expressionValue(with: nil, context: nil) as? NSNumber else {
+            return nil
+        }
+        let doubleValue = anyValue.doubleValue
+        guard doubleValue.isFinite else { return nil }
+        return anyValue.decimalValue
     }
 }
 
